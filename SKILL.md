@@ -1,28 +1,36 @@
 ---
 name: tech-doc-consistency-check
 description: >
-  This skill should be used when the user asks to "check consistency", "audit the doc",
-  "review this document", or "check for errors" on a Markdown technical document.
-  Covers section numbering, TOC correctness, internal hyperlink validity, HTML anchor
-  validity, spelling (tech-aware), and basic prose grammar.
+  Audits and auto-fixes Markdown technical documentation for structural and linguistic
+  consistency, then outputs a summary table of all issues found and fixed. Use this skill
+  whenever the user wants to validate, review, clean up, or proofread a Markdown file —
+  even when they don't say "consistency check" explicitly. Trigger on: "check this doc
+  before I publish", "the TOC links seem broken", "something looks off in the section
+  numbers", "proofread my technical writeup", "review this doc for errors", "make sure
+  the anchors work", "audit this markdown", or any request to verify or clean up a .md
+  file. Checks section numbering, TOC completeness, TOC anchor links (GFM rules including
+  em-dash handling), HTML anchor validity, tech-aware spelling, and prose grammar —
+  auto-fixing everything it can and flagging judgment calls for the user.
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "1.0.0"
+  version: "2.0.0"
 ---
 
 # Tech Doc Consistency Checker
 
-Run all checks below in order. Fix every issue found automatically unless the fix requires a judgment call — in that case, report it to the user and ask.
+Your goal is to leave the document structurally sound and linguistically clean. Work through the checks below in order, fixing each issue as you go so subsequent checks operate on the corrected state. Auto-fix anything with a clear correct answer; flag anything that requires judgment.
 
 ---
 
 ## Check 1 — Section Numbering
 
-Verify that all numbered headings are consecutive with no gaps, at every level.
+Numbered headings are a navigation contract with the reader: when a section is added, removed, or moved, sibling numbers must be updated or that contract breaks. Verify that all numbered headings are consecutive with no gaps, at every level.
+
+**Body order is authoritative.** When the TOC order and the body order disagree, renumber the body sections in place and update the TOC to match — never reorder body sections to match the TOC. The body is the document; the TOC is an index of it.
 
 **How to check:**
-1. Extract all headings with `grep -n "^#" <file>`, filtering out code blocks.
+1. Extract all headings with `grep -n "^#" <file>`, filtering out lines inside fenced code blocks.
 2. For top-level numbered sections (e.g., `## 1.`, `## 2.`), verify they run 1, 2, 3, … with no skips.
 3. For each subsection group (e.g., `### 2.1`, `### 2.2`), verify they run .1, .2, .3, … with no skips.
 4. Verify subsection prefixes match their parent (e.g., all subsections of `## 3.` start with `3.`).
@@ -36,10 +44,12 @@ Verify that all numbered headings are consecutive with no gaps, at every level.
 
 ## Check 2 — TOC Completeness
 
+A TOC that doesn't match the document body misleads readers: a phantom entry sends them nowhere, a missing entry hides content entirely.
+
 Verify that every numbered heading in the document has a corresponding entry in the Table of Contents, and vice versa — no heading is missing from the TOC, and no TOC entry points to a non-existent heading.
 
 **How to check:**
-1. Extract all headings (excluding TOC heading itself and any `<!-- omit in toc -->` headings).
+1. Extract all headings (excluding the TOC heading itself and any `<!-- omit in toc -->` headings).
 2. Extract all TOC entries.
 3. Confirm a 1-to-1 match.
 
@@ -47,38 +57,42 @@ Verify that every numbered heading in the document has a corresponding entry in 
 
 ## Check 3 — TOC Anchor Links
 
-Verify that every TOC link anchor correctly resolves to its target heading using **GitHub-Flavored Markdown (GFM) anchor rules**:
+Even a small mismatch in anchor case or punctuation silently breaks navigation in GitHub, GitLab, and most static site generators — the link renders fine but goes nowhere. Anchors must follow **GitHub-Flavored Markdown (GFM) rules** exactly.
 
-1. Take the heading text (strip any inline code backticks, keeping the inner text).
+**GFM anchor rules:**
+1. Strip inline code backticks, keeping the inner text.
 2. Convert to lowercase.
 3. Remove every character that is not a letter, digit, space, or hyphen.
-4. Replace spaces with hyphens.
-5. The em-dash `—` is stripped, leaving a double-hyphen gap between its surrounding words.
+4. Replace each space with a hyphen — one-to-one, so two adjacent spaces become `--`.
 
-**Example:**
+**Examples:**
 - `## 2. Phase A — Scaffold a Project` → `#2-phase-a--scaffold-a-project`
 - `### 1.1. Install \`agents-cli\`` → `#11-install-agents-cli`
 
-Compare each computed anchor against what the TOC actually contains. Report or fix any mismatch.
+The em-dash `—` is stripped, but the spaces on either side remain, producing `--` in the anchor. This is the most common source of anchor bugs in technical docs.
+
+Compare each computed anchor against what the TOC actually contains. Fix any mismatch.
 
 ---
 
 ## Check 4 — HTML Anchor Validity
 
-For documents that use `<a id="..."></a>` anchors (e.g., for cross-references not tied to headings):
+Some documents use `<a id="..."></a>` anchors for cross-references not tied to headings. Orphaned anchors (defined but never linked) add noise; broken references (linked but undefined) leave readers stranded.
 
 1. Collect every `<a id="...">` definition.
 2. Collect every `(#...)` reference that targets one of those IDs (i.e., not a heading anchor).
 3. Verify every reference has a matching definition, and every definition has at least one reference.
 
-Report orphaned anchors (defined but never linked to) and broken references (linked but not defined).
+Report orphaned anchors and broken references.
 
 ---
 
 ## Check 5 — Spelling (Tech-Aware)
 
+Misspelled prose erodes credibility. Tech docs are full of identifiers, product names, and domain jargon that a naive spellchecker would flag — strip those before scanning so you're only catching genuine mistakes.
+
 Extract prose text by stripping:
-- Fenced code blocks (``` ``` ```)
+- Fenced code blocks (` ``` `)
 - Inline code (`` ` `` ... `` ` ``)
 - URLs (`https?://...`)
 - HTML tags
@@ -87,42 +101,71 @@ Extract prose text by stripping:
 
 Then scan the remaining prose for spelling errors.
 
-**Do NOT flag as errors:**
+**Do not flag:**
 - Technical abbreviations: CLI, SDK, API, GCP, ADK, CI/CD, LLM, IDE, GKE, IAM, HTTP, URL, JSON, YAML, etc.
 - Tool/product names: Terraform, Kubernetes, Dockerfile, Vertex AI, Cloud Run, Cloud Build, etc.
 - Package/command names: `uvicorn`, `fastapi`, `pyproject`, `evalset`, `rubric`, etc. (even when appearing outside backticks in prose)
-- File extensions and paths when discussed in prose: `.env`, `.gitignore`, `.json`, etc.
-- Domain jargon that is standard in the field: observability, evalset, rubrics, symlink, subcommand, metadata, hot-reload, etc.
+- File extensions and paths discussed in prose: `.env`, `.gitignore`, `.json`, etc.
+- Domain jargon standard in the field: observability, evalset, rubrics, symlink, subcommand, metadata, hot-reload, etc.
 - Intentional informal register (e.g., "Gotcha" in a "Key Gotchas" section)
 
 **Do flag:**
 - Misspelled common English words (e.g., `explicity` → `explicitly`, `recieve` → `receive`)
 - Accidentally merged words (e.g., `Withose` → `With those`)
 
-If `aspell` or `hunspell` is available, run: `cat <file> | aspell list --lang=en_US --mode=markdown | sort -u`
-and filter the output against the tech-term allowlist above.
-Otherwise, extract and scan prose manually using a Python/sed script.
+If `aspell` or `hunspell` is available, run:
+```bash
+cat <file> | aspell list --lang=en_US --mode=markdown | sort -u
+```
+and filter the output against the tech-term allowlist above. Otherwise, extract and scan prose manually using a Python/sed script.
 
 ---
 
 ## Check 6 — Basic Prose Grammar
 
-While extracting prose for spelling (Check 5), also scan for common grammatical errors:
+Common grammar slips — missing prepositions, duplicate words, subject-verb disagreement — often survive drafting because readers unconsciously self-correct while reading. Explicit checking catches them.
 
+While extracting prose for spelling (Check 5), also scan for:
 - Missing prepositions (e.g., `resulting this` → `resulting in this`)
 - Missing articles where clearly required (e.g., `in previous section` → `in the previous section`)
 - Subject-verb agreement errors
 - Duplicate words (e.g., `the the`)
 
-**Do NOT flag:**
+**Do not flag:**
 - Intentional terse style common in technical writing (omitting articles is sometimes acceptable)
 - Non-native phrasing that is unambiguous and readable
 
 ---
 
-## Execution Order
+## Check 7 — File Link Validity
 
-Run checks in this order; fix as you go so later checks see the corrected state:
+Broken file links are silent — they render as valid Markdown but produce missing images or dead navigation when the document is viewed. Checking them catches moves, renames, and copy-paste errors that no other check covers.
+
+Collect every link whose target is a local file path — that is, any `![alt](target)` or `[text](target)` where `target` is **not** a URL (does not start with `http://` or `https://`) and **not** an in-document anchor (does not start with `#`).
+
+For each such link:
+- If the path is relative, resolve it relative to the directory containing the document being checked.
+- If the path is absolute, use it as-is.
+- Check whether the file exists on disk.
+
+Report every link whose target file does not exist. Do not attempt to auto-fix — the correct path is unknowable without the user's input.
+
+**Examples of targets to check:**
+- `./images/diagram.png`
+- `../shared/glossary.md`
+- `/Users/vyin/docs/setup.md`
+- `images/screenshot.jpg` (no leading `./`, still relative)
+
+**Examples of targets to skip:**
+- `https://example.com/docs` (URL)
+- `http://localhost:8080` (URL)
+- `#section-heading` (in-document anchor)
+
+---
+
+## Execution Order and Summary
+
+Run checks in this order; fixing as you go ensures later checks see the corrected state:
 
 1. Section Numbering
 2. TOC Completeness
@@ -130,8 +173,9 @@ Run checks in this order; fix as you go so later checks see the corrected state:
 4. HTML Anchor Validity
 5. Spelling
 6. Basic Prose Grammar
+7. File Link Validity
 
-After all checks, report a summary table:
+After all checks, report:
 
 | Check | Issues Found | Fixed |
 |-------|-------------|-------|
@@ -141,5 +185,6 @@ After all checks, report a summary table:
 | HTML Anchor Validity | N | N |
 | Spelling | N | N |
 | Prose Grammar | N | N |
+| File Link Validity | N | N |
 
-If any issue required a judgment call and was not auto-fixed, list it explicitly for the user.
+If any issue required a judgment call and was not auto-fixed, list it explicitly below the table.
