@@ -163,6 +163,23 @@ Report every link whose target file does not exist. Do not attempt to auto-fix �
 
 ---
 
+## Check 8 — Image Alt Text
+
+Empty alt text on images (`![](...) `) silently degrades accessibility and makes images unidentifiable when they fail to load. Every local image link must have non-empty alt text.
+
+**How to check:**
+1. Collect every image link `![alt](target)` where `target` is a local file path (not a URL, not an anchor).
+2. If `alt` is empty, auto-fix by setting it to the filename portion of `target` (i.e., the last path segment, including extension).
+
+**Example:**
+- `![](images/agents-cli-deploy-to-agent-runtime.png)` → `![agents-cli-deploy-to-agent-runtime.png](images/agents-cli-deploy-to-agent-runtime.png)`
+
+**Do not flag:**
+- Images with non-empty alt text, even if the alt text doesn't match the filename.
+- Remote images (URLs) — their alt text is out of scope for this check.
+
+---
+
 ## Execution Order and Summary
 
 Run checks in this order; fixing as you go ensures later checks see the corrected state:
@@ -174,6 +191,7 @@ Run checks in this order; fixing as you go ensures later checks see the correcte
 5. Spelling
 6. Basic Prose Grammar
 7. File Link Validity
+8. Image Alt Text
 
 After all checks, report:
 
@@ -186,5 +204,6 @@ After all checks, report:
 | Spelling | N | N |
 | Prose Grammar | N | N |
 | File Link Validity | N | N |
+| Image Alt Text | N | N |
 
 If any issue required a judgment call and was not auto-fixed, list it explicitly below the table.
