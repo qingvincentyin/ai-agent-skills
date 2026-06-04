@@ -14,7 +14,7 @@ description: >
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "2.0.0"
+  version: "2.0.1"
 ---
 
 # Tech Doc Consistency Checker
