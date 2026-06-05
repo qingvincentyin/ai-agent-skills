@@ -14,7 +14,7 @@ description: >
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "2.0.3"
+  version: "2.0.4"
 ---
 
 # Tech Doc Consistency Checker
@@ -187,9 +187,11 @@ In diagrams and prose, protocols are often written as `X / Y` when X is actually
 **Rule:** When a label or phrase uses `X / Y` where X is a protocol defined on top of Y, replace it with `X (over Y)`.
 
 **How to check:**
-1. Scan diagram arrow labels, table cells, and prose for the pattern `<Protocol> / <Protocol>`.
-2. For each match, determine whether X is layered on top of Y (i.e., X is defined at a higher abstraction level and uses Y as its transport or substrate).
-3. If so, rewrite as `X (over Y)`. If the slash genuinely means "either one", rewrite as `X or Y` to make that explicit instead.
+1. Scan all diagram text — arrow labels, node labels, table cells, and prose — for the pattern `<Term> / <Term>`.
+2. For each match, determine the relationship between X and Y:
+   - If X is a protocol layered on top of Y → rewrite as `X (over Y)`.
+   - If the slash means "either one" → rewrite as `X or Y`.
+3. This applies equally to node labels (e.g., `Gemini Enterprise or Orchestrator Agent`, not `Gemini Enterprise / Orchestrator Agent`) and arrow labels.
 
 **Examples:**
 
@@ -199,6 +201,7 @@ In diagrams and prose, protocols are often written as `X / Y` when X is actually
 | `MCP / HTTPS` | `MCP (over HTTP)` | MCP (Model Context Protocol) is defined on top of HTTP |
 | `OTLP / gRPC` | `OTLP (over gRPC)` | OTLP is the OpenTelemetry wire format; gRPC is its transport |
 | `REST / HTTPS` | `REST (over HTTPS)` | REST is an architectural style applied over HTTPS |
+| `Gemini Enterprise / Orchestrator Agent` | `Gemini Enterprise or Orchestrator Agent` | Two alternative callers, not a layered relationship — use "or" |
 
 **Do not flag:**
 - `HTTP or gRPC` — the word "or" already makes the choice explicit.
