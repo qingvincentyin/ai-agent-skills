@@ -14,7 +14,7 @@ description: >
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "2.0.1"
+  version: "2.0.2"
 ---
 
 # Tech Doc Consistency Checker
@@ -207,3 +207,25 @@ After all checks, report:
 | Image Alt Text | N | N |
 
 If any issue required a judgment call and was not auto-fixed, list it explicitly below the table.
+
+---
+
+## On-Demand: Package Document into a ZIP
+
+**Only do this when the user explicitly asks** — e.g., "package the doc into a ZIP file", "ZIP up this doc", "create a zip file for this doc". Do NOT run this automatically as part of the consistency check.
+
+Creates a ZIP archive containing the document and all locally referenced image files, preserving the relative folder structure so images load correctly when extracted anywhere.
+
+Run from the directory containing the document:
+
+```bash
+cd "<doc-directory>" && \
+zip -j "<doc>.zip" "<doc>" && \
+grep -o '](images/[^)]*' "<doc>" | sed 's/^](//' | sort -u | while read img; do
+  zip "<doc>.zip" "$img"
+done
+```
+
+The `-j` flag places the document at the ZIP root (no parent path). The image loop adds each image under its relative `images/` path. Only files actually referenced in the document are included — not the entire `images/` folder.
+
+**Naming:** Same as the document filename (e.g., `My Guide.md` → `My Guide.zip`), placed in the same directory.
