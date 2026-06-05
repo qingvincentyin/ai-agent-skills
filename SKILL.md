@@ -14,7 +14,7 @@ description: >
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "2.0.2"
+  version: "2.0.3"
 ---
 
 # Tech Doc Consistency Checker
@@ -180,6 +180,33 @@ Empty alt text on images (`![](...) `) silently degrades accessibility and makes
 
 ---
 
+## Check 9 — Protocol Layering Precision
+
+In diagrams and prose, protocols are often written as `X / Y` when X is actually a higher-level protocol defined on top of Y. That slash is ambiguous: it could mean "either X or Y", "X plus Y", or "X over Y" — three different things. When the relationship is layering, make it explicit.
+
+**Rule:** When a label or phrase uses `X / Y` where X is a protocol defined on top of Y, replace it with `X (over Y)`.
+
+**How to check:**
+1. Scan diagram arrow labels, table cells, and prose for the pattern `<Protocol> / <Protocol>`.
+2. For each match, determine whether X is layered on top of Y (i.e., X is defined at a higher abstraction level and uses Y as its transport or substrate).
+3. If so, rewrite as `X (over Y)`. If the slash genuinely means "either one", rewrite as `X or Y` to make that explicit instead.
+
+**Examples:**
+
+| Before | After | Why |
+|---|---|---|
+| `HTTP / A2A` | `A2A (over HTTP)` | A2A is a protocol spec that runs on top of HTTP |
+| `MCP / HTTPS` | `MCP (over HTTP)` | MCP (Model Context Protocol) is defined on top of HTTP |
+| `OTLP / gRPC` | `OTLP (over gRPC)` | OTLP is the OpenTelemetry wire format; gRPC is its transport |
+| `REST / HTTPS` | `REST (over HTTPS)` | REST is an architectural style applied over HTTPS |
+
+**Do not flag:**
+- `HTTP or gRPC` — the word "or" already makes the choice explicit.
+- `TCP/IP` — this is a single compound name, not a slash-ambiguity case.
+- `CI/CD` — an established compound abbreviation, not a protocol expression.
+
+---
+
 ## Execution Order and Summary
 
 Run checks in this order; fixing as you go ensures later checks see the corrected state:
@@ -192,6 +219,7 @@ Run checks in this order; fixing as you go ensures later checks see the correcte
 6. Basic Prose Grammar
 7. File Link Validity
 8. Image Alt Text
+9. Protocol Layering Precision
 
 After all checks, report:
 
@@ -205,6 +233,7 @@ After all checks, report:
 | Prose Grammar | N | N |
 | File Link Validity | N | N |
 | Image Alt Text | N | N |
+| Protocol Layering Precision | N | N |
 
 If any issue required a judgment call and was not auto-fixed, list it explicitly below the table.
 
