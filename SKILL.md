@@ -14,7 +14,7 @@ description: >
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "2.0.4"
+  version: "2.0.5"
 ---
 
 # Tech Doc Consistency Checker
@@ -210,6 +210,41 @@ In diagrams and prose, protocols are often written as `X / Y` when X is actually
 
 ---
 
+## Check 10 — Filename vs. Title Agreement
+
+A document's filename is often used as a URL slug or navigation label. When it drifts from the H1 title, external references and breadcrumbs become misleading.
+
+**Rule:** The slug derived from the filename must match the slug derived from the H1 title. Flag any mismatch; do not auto-fix (renaming a file is a destructive filesystem operation).
+
+**Slug derivation — apply identically to both the filename (minus `.md` extension) and the H1 title text:**
+1. Strip inline code backticks, keeping the inner text.
+2. Convert to lowercase.
+3. Remove every character that is not a letter, digit, space, or hyphen.
+4. Replace each space with a hyphen (one-to-one).
+
+**How to check:**
+1. Take the bare filename (strip the `.md` extension).
+2. Take the text of the first `# ` heading in the document body.
+3. Apply the slug rules to both.
+4. If the two slugs differ, report: the filename slug, the title slug, and the specific mismatch.
+
+**Examples:**
+
+| Filename | H1 Title | Filename slug | Title slug | Match? |
+|---|---|---|---|---|
+| `my-caveman-agent4.md` | `# My Caveman Agent4` | `my-caveman-agent4` | `my-caveman-agent4` | ✓ |
+| `devops-guide.md` | `# DevOps Guide` | `devops-guide` | `devops-guide` | ✓ |
+| `deploy-guide.md` | `# Deployment Guide` | `deploy-guide` | `deployment-guide` | ✗ |
+| `agents_cli_setup.md` | `# Agents CLI Setup` | `agents-cli-setup` | `agents-cli-setup` | ✓ (underscore→hyphen via rule 4) |
+
+**Do not flag:**
+- Filenames that are intentionally abbreviated (judgment call — just report the mismatch so the user can decide).
+
+**Always flag:**
+- Documents with no H1 heading — report as "missing H1 title".
+
+---
+
 ## Execution Order and Summary
 
 Run checks in this order; fixing as you go ensures later checks see the corrected state:
@@ -223,6 +258,7 @@ Run checks in this order; fixing as you go ensures later checks see the correcte
 7. File Link Validity
 8. Image Alt Text
 9. Protocol Layering Precision
+10. Filename vs. Title Agreement
 
 After all checks, report:
 
@@ -237,6 +273,7 @@ After all checks, report:
 | File Link Validity | N | N |
 | Image Alt Text | N | N |
 | Protocol Layering Precision | N | N |
+| Filename vs. Title Agreement | N | — |
 
 If any issue required a judgment call and was not auto-fixed, list it explicitly below the table.
 
