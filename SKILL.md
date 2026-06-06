@@ -14,7 +14,7 @@ description: >
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "2.1.0"
+  version: "2.1.1"
 ---
 
 # Tech Doc Consistency Checker
@@ -55,6 +55,10 @@ Verify that every numbered heading in the document has a corresponding entry in 
 **H1 must carry `<!-- omit in toc -->`.** Without this comment, TOC auto-generators (e.g., VS Code "Markdown All in One") will silently re-add the H1 to the TOC on the next regeneration. Auto-fix: append `<!-- omit in toc -->` to the H1 line if it is missing.
 
 Example: `# My Guide` → `# My Guide <!-- omit in toc -->`
+
+**The TOC heading itself must carry `<!-- omit in toc -->`.** The "Table of Contents" heading (or equivalent, e.g., `## Table of Contents`, `## Contents`) must not appear as an entry inside the TOC it introduces — that would be self-referential and meaningless. Without the comment, TOC auto-generators will silently re-add it on the next save. Auto-fix: append `<!-- omit in toc -->` to the TOC heading line if it is missing.
+
+Example: `## Table of Contents` → `## Table of Contents <!-- omit in toc -->`
 
 **How to check:**
 1. Extract all headings (excluding the TOC heading itself and any `<!-- omit in toc -->` headings).
