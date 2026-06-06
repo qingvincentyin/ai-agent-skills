@@ -14,7 +14,7 @@ description: >
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "2.0.9"
+  version: "2.1.0"
 ---
 
 # Tech Doc Consistency Checker
@@ -51,6 +51,10 @@ Verify that every numbered heading in the document has a corresponding entry in 
 **A document must have exactly one H1 heading.** Count all `# ` headings (excluding lines inside fenced code blocks). Flag if the count is zero or greater than one — list the line numbers of all H1 headings found. Do not auto-fix; the correct resolution depends on intent.
 
 **H1 must not appear in the TOC.** Including the H1 in the TOC adds a spurious nesting level that pushes all real entries one indent deeper. If the TOC's root entry links to the H1, remove it and dedent all remaining entries by one level. (Only applies when the document has exactly one H1; if the H1 count is wrong, flag that first.)
+
+**H1 must carry `<!-- omit in toc -->`.** Without this comment, TOC auto-generators (e.g., VS Code "Markdown All in One") will silently re-add the H1 to the TOC on the next regeneration. Auto-fix: append `<!-- omit in toc -->` to the H1 line if it is missing.
+
+Example: `# My Guide` → `# My Guide <!-- omit in toc -->`
 
 **How to check:**
 1. Extract all headings (excluding the TOC heading itself and any `<!-- omit in toc -->` headings).
