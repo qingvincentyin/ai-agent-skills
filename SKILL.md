@@ -210,7 +210,7 @@ In diagrams and prose, protocols are often written as `X / Y` when X is actually
 
 ---
 
-## Check 11 — Heading Level Increments
+## Check 10 — Heading Level Increments
 
 Skipping a heading level (e.g., jumping from `#` directly to `###`) breaks the document outline and confuses screen readers and document parsers that rely on a strict hierarchy.
 
@@ -235,7 +235,7 @@ Do not auto-fix — the correct repair depends on intent (promote the child, dem
 
 ---
 
-## Check 10 — Filename vs. Title Agreement
+## Check 11 — Filename vs. Title Agreement
 
 A document's filename is often used as a URL slug or navigation label. When it drifts from the H1 title, external references and breadcrumbs become misleading.
 
@@ -283,8 +283,8 @@ Run checks in this order; fixing as you go ensures later checks see the correcte
 7. File Link Validity
 8. Image Alt Text
 9. Protocol Layering Precision
-10. Filename vs. Title Agreement
-11. Heading Level Increments
+10. Heading Level Increments
+11. Filename vs. Title Agreement
 
 After all checks, report:
 
@@ -299,8 +299,8 @@ After all checks, report:
 | File Link Validity | N | N |
 | Image Alt Text | N | N |
 | Protocol Layering Precision | N | N |
-| Filename vs. Title Agreement | N | — |
 | Heading Level Increments | N | — |
+| Filename vs. Title Agreement | N | — |
 
 If any issue required a judgment call and was not auto-fixed, list it explicitly below the table.
 
