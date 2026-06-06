@@ -14,7 +14,7 @@ description: >
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "2.0.8"
+  version: "2.0.9"
 ---
 
 # Tech Doc Consistency Checker
@@ -211,6 +211,7 @@ In diagrams and prose, protocols are often written as `X / Y` when X is actually
 - `HTTP or gRPC` — the word "or" already makes the choice explicit.
 - `TCP/IP` — this is a single compound name, not a slash-ambiguity case.
 - `CI/CD` — an established compound abbreviation, not a protocol expression.
+- Established compound industry terms where the slash is part of the term itself, not a separator between two independent concepts (e.g., `no-code / low-code`, `read / write`, `input / output`). When in doubt, ask: would removing one side leave the other side meaningful in context? If the two sides form a recognized spectrum or pair, leave the slash.
 
 ---
 
