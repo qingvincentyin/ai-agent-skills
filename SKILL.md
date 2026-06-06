@@ -14,7 +14,7 @@ description: >
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "2.0.6"
+  version: "2.0.8"
 ---
 
 # Tech Doc Consistency Checker
@@ -47,6 +47,10 @@ Numbered headings are a navigation contract with the reader: when a section is a
 A TOC that doesn't match the document body misleads readers: a phantom entry sends them nowhere, a missing entry hides content entirely.
 
 Verify that every numbered heading in the document has a corresponding entry in the Table of Contents, and vice versa — no heading is missing from the TOC, and no TOC entry points to a non-existent heading.
+
+**A document must have exactly one H1 heading.** Count all `# ` headings (excluding lines inside fenced code blocks). Flag if the count is zero or greater than one — list the line numbers of all H1 headings found. Do not auto-fix; the correct resolution depends on intent.
+
+**H1 must not appear in the TOC.** Including the H1 in the TOC adds a spurious nesting level that pushes all real entries one indent deeper. If the TOC's root entry links to the H1, remove it and dedent all remaining entries by one level. (Only applies when the document has exactly one H1; if the H1 count is wrong, flag that first.)
 
 **How to check:**
 1. Extract all headings (excluding the TOC heading itself and any `<!-- omit in toc -->` headings).
@@ -267,6 +271,7 @@ A document's filename is often used as a URL slug or navigation label. When it d
 
 **Always flag:**
 - Documents with no H1 heading — report as "missing H1 title".
+- Documents with more than one H1 heading — report as "multiple H1 titles" and list their line numbers. When there are multiple H1s, the slug comparison is undefined; skip the slug check and flag the H1 count issue only.
 
 ---
 
