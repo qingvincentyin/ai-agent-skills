@@ -14,7 +14,7 @@ description: >
 license: CC0-1.0
 metadata:
   author: Vincent Yin
-  version: "2.0.5"
+  version: "2.0.6"
 ---
 
 # Tech Doc Consistency Checker
@@ -210,6 +210,31 @@ In diagrams and prose, protocols are often written as `X / Y` when X is actually
 
 ---
 
+## Check 11 — Heading Level Increments
+
+Skipping a heading level (e.g., jumping from `#` directly to `###`) breaks the document outline and confuses screen readers and document parsers that rely on a strict hierarchy.
+
+**Rule:** When traversing headings in document order, the level of each heading may exceed the previous heading's level by **at most 1**. Decreasing by any amount is allowed.
+
+**How to check:**
+1. Extract all headings in order (excluding lines inside fenced code blocks), recording each heading's level (number of leading `#` characters).
+2. For each consecutive pair, if `current_level > previous_level + 1`, flag it.
+3. Report the line number, the offending heading text, and the skip (e.g., "jumped from level 2 to level 4").
+
+**Examples:**
+
+| Previous heading | Current heading | Level change | Valid? |
+|---|---|---|---|
+| `## Section` (2) | `### Subsection` (3) | +1 | ✓ |
+| `# Title` (1) | `## Section` (2) | +1 | ✓ |
+| `### Sub` (3) | `# Top` (1) | −2 | ✓ (decreasing is always allowed) |
+| `# Title` (1) | `### Sub` (3) | +2 | ✗ skips level 2 |
+| `## Section` (2) | `##### Deep` (5) | +3 | ✗ skips levels 3 and 4 |
+
+Do not auto-fix — the correct repair depends on intent (promote the child, demote the child, or insert an intermediate heading).
+
+---
+
 ## Check 10 — Filename vs. Title Agreement
 
 A document's filename is often used as a URL slug or navigation label. When it drifts from the H1 title, external references and breadcrumbs become misleading.
@@ -259,6 +284,7 @@ Run checks in this order; fixing as you go ensures later checks see the correcte
 8. Image Alt Text
 9. Protocol Layering Precision
 10. Filename vs. Title Agreement
+11. Heading Level Increments
 
 After all checks, report:
 
@@ -274,6 +300,7 @@ After all checks, report:
 | Image Alt Text | N | N |
 | Protocol Layering Precision | N | N |
 | Filename vs. Title Agreement | N | — |
+| Heading Level Increments | N | — |
 
 If any issue required a judgment call and was not auto-fixed, list it explicitly below the table.
 
