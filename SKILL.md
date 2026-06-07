@@ -11,7 +11,7 @@ description: >
   file. Checks section numbering, TOC completeness, TOC anchor links (GFM rules including
   em-dash handling), HTML anchor validity, tech-aware spelling, and prose grammar —
   auto-fixing everything it can and flagging judgment calls for the user.
-license: CC0-1.0
+license: Apache-2.0
 metadata:
   author: Vincent Yin
   version: "2.1.1"
