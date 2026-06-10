@@ -11,5 +11,5 @@ npx skills add qingvincentyin/tech-doc-consistency-check
 
 ## License
 
-CC0-1.0 — public domain.
+See `LICENSE` file.
 

@@ -14,7 +14,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: Vincent Yin
-  version: "2.1.1"
+  version: "2.1.2"
 ---
 
 # Tech Doc Consistency Checker
@@ -214,6 +214,8 @@ In diagrams and prose, protocols are often written as `X / Y` when X is actually
 | `OTLP / gRPC` | `OTLP (over gRPC)` | OTLP is the OpenTelemetry wire format; gRPC is its transport |
 | `REST / HTTPS` | `REST (over HTTPS)` | REST is an architectural style applied over HTTPS |
 | `Gemini Enterprise / Orchestrator Agent` | `Gemini Enterprise or Orchestrator Agent` | Two alternative callers, not a layered relationship — use "or" |
+
+**HTTP vs HTTPS:** Use HTTP and HTTPS interchangeably when referring to network protocols in general (e.g. arrow labels in diagrams, prose descriptions of communication patterns). Only distinguish them when the term appears as a **URL prefix** in actual URLs (e.g. `https://...` in code, config, or links), where the distinction affects behavior (TLS enforcement, redirects). Do not flag or correct `HTTP` → `HTTPS` in general protocol descriptions.
 
 **Do not flag:**
 - `HTTP or gRPC` — the word "or" already makes the choice explicit.
