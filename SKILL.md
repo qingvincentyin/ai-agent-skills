@@ -10,11 +10,15 @@ description: >
   the anchors work", "audit this markdown", or any request to verify or clean up a .md
   file. Checks section numbering, TOC completeness, TOC anchor links (GFM rules including
   em-dash handling), HTML anchor validity, tech-aware spelling, and prose grammar —
-  auto-fixing everything it can and flagging judgment calls for the user.
+  auto-fixing everything it can and flagging judgment calls for the user. Also handles
+  packaging a Markdown doc and its locally referenced images into a ZIP archive — trigger
+  on "zip up this doc", "package this doc into a zip file", "create a zip from this doc",
+  "zip this markdown with its images", or any request to bundle/archive a .md file for
+  sharing.
 license: Apache-2.0
 metadata:
   author: Vincent Yin
-  version: "2.1.2"
+  version: "2.1.4"
 ---
 
 # Tech Doc Consistency Checker
@@ -279,6 +283,7 @@ A document's filename is often used as a URL slug or navigation label. When it d
 
 **Do not flag:**
 - Filenames that are intentionally abbreviated (judgment call — just report the mismatch so the user can decide).
+- **Colon-to-hyphen substitution.** When the only difference is that the H1 title uses a colon (`:`) where the filename uses a hyphen — typically a space-padded ` - `, which slugifies to `---` against the title's stripped `:` — treat it as cosmetic and do not flag. Most filesystems disallow `:` in filenames, so a hyphen is the standard substitute. Example: `Claude Session Branching - Pros vs. Cons.md` (`claude-session-branching---pros-vs-cons`) vs `# Claude Session Branching: Pros vs. Cons` (`claude-session-branching-pros-vs-cons`) — differs only at the `:`/`-` boundary, so it is a match for this check's purposes.
 
 **Always flag:**
 - Documents with no H1 heading — report as "missing H1 title".
