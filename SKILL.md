@@ -9,7 +9,8 @@ description: >
   numbers", "proofread my technical writeup", "review this doc for errors", "make sure
   the anchors work", "audit this markdown", or any request to verify or clean up a .md
   file. Checks section numbering, TOC completeness, TOC anchor links (GFM rules including
-  em-dash handling), HTML anchor validity, tech-aware spelling, and prose grammar —
+  em-dash handling), HTML anchor validity, tech-aware spelling, prose grammar, and
+  hard-wrapped paragraphs that misrender as line breaks in some viewers —
   auto-fixing everything it can and flagging judgment calls for the user. Also handles
   packaging a Markdown doc and its locally referenced images into a ZIP archive — trigger
   on "zip up this doc", "package this doc into a zip file", "create a zip from this doc",
@@ -18,7 +19,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: Vincent Yin
-  version: "2.1.4"
+  version: "2.2.0"
 ---
 
 # Tech Doc Consistency Checker
@@ -291,6 +292,31 @@ A document's filename is often used as a URL slug or navigation label. When it d
 
 ---
 
+## Check 12 — Embedded Line Breaks in Paragraphs
+
+A single newline inside a paragraph does **not** render identically across Markdown viewers. Strict CommonMark/GFM renderers (e.g., VS Code's built-in preview, `breaks: false`) collapse it to a space and reflow to window width — so hard wraps are invisible there. But renderers configured with markdown-it `breaks: true` emit a literal `<br>` for every single newline; common examples include **Markdown Preview Enhanced** (VS Code) and browser Markdown viewers like the Chrome "Markdown Reader" extension. In those, a hard-wrapped paragraph breaks mid-sentence at the source's arbitrary wrap columns and does **not** reflow to the window. The safe, portable form is one continuous line per paragraph (and per list item), which renders correctly under both `breaks: false` and `breaks: true`.
+
+**Rule:** Each prose paragraph, and each individual list item, should occupy a single physical line. If a prose paragraph or a single list item is split across multiple physical lines by single (non-blank-separated) newlines, flag it as a hard-wrapped block. **Do not auto-fix** — detect the situation and offer to reflow it; apply the reflow only if the user accepts.
+
+**How to check:**
+1. Walk the document line by line, skipping anything inside fenced code blocks (` ``` `).
+2. Identify candidate blocks as maximal runs of consecutive non-blank lines that are plain prose or a single list item. **Exclude** these line types from the rule (single newlines within them are legitimate structure, not hard wraps):
+   - Headings (`#`, `##`, …)
+   - Table rows (lines containing the `|` column structure)
+   - Blockquote lines (`>`)
+   - Raw HTML blocks
+3. For a **prose paragraph** (a run of non-blank lines none of which begin a list item): if the run is more than one physical line, flag it — the lines belong to one paragraph and were hard-wrapped.
+4. For a **list item**: treat the item's marker line plus any indented continuation lines as one logical item. If that item spans more than one physical line, flag it. (The newline *between two different list items* is correct and is not flagged; only continuation-line wrapping *within* one item is.)
+
+**What to report:** the starting line number of each hard-wrapped block and a one-line preview. Then offer: *"Reflow these N block(s) to one continuous line each? (headings, table rows, and code blocks left untouched)"* Reflow only on confirmation, joining the wrapped physical lines of each block into a single line with single spaces, preserving list-item markers and indentation.
+
+**Do not flag:**
+- Blocks separated by a blank line — those are already distinct paragraphs/items.
+- Line breaks inside fenced code blocks, tables, or blockquotes.
+- A paragraph or list item that is already a single physical line.
+
+---
+
 ## Execution Order and Summary
 
 Run checks in this order; fixing as you go ensures later checks see the corrected state:
@@ -306,6 +332,7 @@ Run checks in this order; fixing as you go ensures later checks see the correcte
 9. Protocol Layering Precision
 10. Heading Level Increments
 11. Filename vs. Title Agreement
+12. Embedded Line Breaks in Paragraphs
 
 After all checks, report:
 
@@ -322,6 +349,7 @@ After all checks, report:
 | Protocol Layering Precision | N | N |
 | Heading Level Increments | N | — |
 | Filename vs. Title Agreement | N | — |
+| Embedded Line Breaks in Paragraphs | N | — |
 
 If any issue required a judgment call and was not auto-fixed, list it explicitly below the table.
 
